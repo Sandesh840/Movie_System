@@ -12,7 +12,7 @@ namespace MovieManagement.Controllers
         {
             if (limit <= 0)
             {
-                limit = 9;
+                limit = 6;
             }
             if (offset <= 0)
             {

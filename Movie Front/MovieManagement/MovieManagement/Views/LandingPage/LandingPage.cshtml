@@ -1,120 +1,59 @@
-﻿<div class="container">
+﻿@model List<MovieManagement.ViewModels.MovieViewModels>
+@{
+    int total = 0;
+    if (Model != null)
+    {
+        var totalInit = Model[0].Total / 6;
+        var totalRemainder = Model[0].Total % 6;
+        if (totalRemainder > 0)
+        {
+            total = totalInit + 1;
+        }
+
+    }
+    
+}
+
+<div class="container">
+
     <div class="row">
 
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <img class="card-img-top" src="https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/863E75A035911DBA10F8D7EE1E433A12A1BF4915670B66597AC31C585A291942/scale?width=1200&aspectRatio=1.78&format=jpeg" alt="Movie Image">
-                <div class="card-body">
-                    <h5 class="card-title">Title</h5>
-                    <p class="card-text">Description</p>
-                    <p class="card-text">Release Year: ReleaseYear</p>
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <img class="card-img-top" src="@item.MoviePath" alt="Movie Image"
+                     style="width: 100%;
+    height: 200px;
+    object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">@item.Title</h5>
+                        <p class="card-text">@item.Description</p>
+                        <p class="card-text">Release Year: @item.CreatedDateTime.ToShortDateString()</p>
+                        <a href="#" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        }
 
-                    <a href="#" class="btn btn-primary">View Details</a>
-                </div>
-            </div>
-        </div>
-
-
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <img class="card-img-top" src="https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/863E75A035911DBA10F8D7EE1E433A12A1BF4915670B66597AC31C585A291942/scale?width=1200&aspectRatio=1.78&format=jpeg" alt="Movie Image">
-                <div class="card-body">
-                    <h5 class="card-title">Title</h5>
-                    <p class="card-text">Description</p>
-                    <p class="card-text">Release Year: ReleaseYear</p>
-                    <a href="#" class="btn btn-primary">View Details</a>
-                </div>
-            </div>
-        </div>
-
-
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <img class="card-img-top" src="https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/863E75A035911DBA10F8D7EE1E433A12A1BF4915670B66597AC31C585A291942/scale?width=1200&aspectRatio=1.78&format=jpeg" alt="Movie Image">
-                <div class="card-body">
-                    <h5 class="card-title">Title</h5>
-                    <p class="card-text">Description</p>
-                    <p class="card-text">Release Year: ReleaseYear</p>
-                    <a href="#" class="btn btn-primary">View Details</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <img class="card-img-top" src="https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/863E75A035911DBA10F8D7EE1E433A12A1BF4915670B66597AC31C585A291942/scale?width=1200&aspectRatio=1.78&format=jpeg" alt="Movie Image">
-                <div class="card-body">
-                    <h5 class="card-title">Title</h5>
-                    <p class="card-text">Description</p>
-                    <p class="card-text">Release Year: ReleaseYear</p>
-                    <a href="#" class="btn btn-primary">View Details</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <img class="card-img-top" src="https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/863E75A035911DBA10F8D7EE1E433A12A1BF4915670B66597AC31C585A291942/scale?width=1200&aspectRatio=1.78&format=jpeg" alt="Movie Image">
-                <div class="card-body">
-                    <h5 class="card-title">Title</h5>
-                    <p class="card-text">Description</p>
-                    <p class="card-text">Release Year: ReleaseYear</p>
-                    <a href="#" class="btn btn-primary">View Details</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <img class="card-img-top" src="https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/863E75A035911DBA10F8D7EE1E433A12A1BF4915670B66597AC31C585A291942/scale?width=1200&aspectRatio=1.78&format=jpeg" alt="Movie Image">
-                <div class="card-body">
-                    <h5 class="card-title">Title</h5>
-                    <p class="card-text">Description</p>
-                    <p class="card-text">Release Year: ReleaseYear</p>
-                    <a href="#" class="btn btn-primary">View Details</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <img class="card-img-top" src="https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/863E75A035911DBA10F8D7EE1E433A12A1BF4915670B66597AC31C585A291942/scale?width=1200&aspectRatio=1.78&format=jpeg" alt="Movie Image">
-                <div class="card-body">
-                    <h5 class="card-title">Title</h5>
-                    <p class="card-text">Description</p>
-                    <p class="card-text">Release Year: ReleaseYear</p>
-                    <a href="#" class="btn btn-primary">View Details</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <img class="card-img-top" src="https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/863E75A035911DBA10F8D7EE1E433A12A1BF4915670B66597AC31C585A291942/scale?width=1200&aspectRatio=1.78&format=jpeg" alt="Movie Image">
-                <div class="card-body">
-                    <h5 class="card-title">Title</h5>
-                    <p class="card-text">Description</p>
-                    <p class="card-text">Release Year: ReleaseYear</p>
-                    <a href="#" class="btn btn-primary">View Details</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <img class="card-img-top" src="https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/863E75A035911DBA10F8D7EE1E433A12A1BF4915670B66597AC31C585A291942/scale?width=1200&aspectRatio=1.78&format=jpeg" alt="Movie Image">
-                <div class="card-body">
-                    <h5 class="card-title">Title</h5>
-                    <p class="card-text">Description</p>
-                    <p class="card-text">Release Year: ReleaseYear</p>
-                    <a href="#" class="btn btn-primary">View Details</a>
-                </div>
-            </div>
-        </div>
     </div>
+    @*<iframe width="560" height="315" src="Uploads/Rc1.mp4" frameborder="0" allowfullscreen></iframe>*@
+
     <div class="row">
         <nav aria-label="Page navigation example">
-            <ul class="pagination" style="justify-content:center">
-                <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-                <li class="page-item"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item"><a class="page-link" href="#">Next</a></li>
+            <ul class="pagination" style="justify-content: center">
+                @for (int i = 1; i <= total; i++)
+                {
+                    var currentOffset = (i - 1) * 6;
+                    <li class="page-item"><a class="page-link" href="/LandingPage/LandingPage?limit=6&amp;offset=@currentOffset&amp;searchName=">@i</a></li>
+                }
             </ul>
         </nav>
     </div>
+</div>
+
+
+
+
+
 </div>

@@ -10,6 +10,6 @@ namespace Movie_Back_API.ViewModels
         public int Genre { get; set; }
         public string? MovieLink { get; set; }
         public string? MoviePath { get; set; }
-        public int? Total { get; set; }
+        public int Total { get; set; }
     }
 }

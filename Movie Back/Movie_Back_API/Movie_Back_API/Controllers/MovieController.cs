@@ -32,13 +32,22 @@ namespace Movie_Back_API.Controllers
                     movie.CreatedDateTime=DateTime.Now;
                     _applicationDbContext.Movie.Add(movie);
                     _applicationDbContext.SaveChanges();
+
                     MovieDetails movieDetails=new MovieDetails();
                     movieDetails.MovieId = movie.Id;
-                    movieDetails.Genra=movieViewModels.Genre;
+                    movieDetails.Genra=movieViewModels.Genre;                   
                     movieDetails.MovieLink = movieViewModels.MovieLink;
                     movieDetails.CreatedDateTime=DateTime.Now;
                     _applicationDbContext.MovieDetails.Add(movieDetails);
                     _applicationDbContext.SaveChanges();
+
+                    MovieMedia movieMedia=new MovieMedia();
+                    movieMedia.MovieId=movie.Id;
+                    movieMedia.MediaPath=movieViewModels.MoviePath;
+                    movieMedia.CreatedDateTime=DateTime.Now;
+                    _applicationDbContext.MovieMedia.Add(movieMedia);
+                    _applicationDbContext.SaveChanges();
+
                     dbTran.Commit();
                     return Ok("Data Saved mSuccessfully");
                 }
@@ -124,5 +133,7 @@ namespace Movie_Back_API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+               
     }
 }

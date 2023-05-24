@@ -9,8 +9,8 @@
         public int Genre { get; set; }
         public string? MovieLink { get; set; }
         public string? MoviePath { get; set; }
-        public int? Total { get; set; }
-        public DateTime? CreatedDateTime { get; set; }
+        public int Total { get; set; }
+        public DateTime CreatedDateTime { get; set; }
         public IFormFile? FormFile { get; set; }
     }
 }

@@ -30,6 +30,7 @@ C:\Users\HP\source\repos\course\Movie Management\Movie Front\MovieManagement\Mov
 C:\Users\HP\source\repos\course\Movie Management\Movie Front\MovieManagement\MovieManagement\bin\Debug\net6.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 C:\Users\HP\source\repos\course\Movie Management\Movie Front\MovieManagement\MovieManagement\bin\Debug\net6.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\HP\source\repos\course\Movie Management\Movie Front\MovieManagement\MovieManagement\bin\Debug\net6.0\Microsoft.Win32.SystemEvents.dll
+C:\Users\HP\source\repos\course\Movie Management\Movie Front\MovieManagement\MovieManagement\bin\Debug\net6.0\Newtonsoft.Json.dll
 C:\Users\HP\source\repos\course\Movie Management\Movie Front\MovieManagement\MovieManagement\bin\Debug\net6.0\System.Configuration.ConfigurationManager.dll
 C:\Users\HP\source\repos\course\Movie Management\Movie Front\MovieManagement\MovieManagement\bin\Debug\net6.0\System.Drawing.Common.dll
 C:\Users\HP\source\repos\course\Movie Management\Movie Front\MovieManagement\MovieManagement\bin\Debug\net6.0\System.IdentityModel.Tokens.Jwt.dll
@@ -69,4 +70,3 @@ C:\Users\HP\source\repos\course\Movie Management\Movie Front\MovieManagement\Mov
 C:\Users\HP\source\repos\course\Movie Management\Movie Front\MovieManagement\MovieManagement\obj\Debug\net6.0\MovieManagement.pdb
 C:\Users\HP\source\repos\course\Movie Management\Movie Front\MovieManagement\MovieManagement\obj\Debug\net6.0\MovieManagement.genruntimeconfig.cache
 C:\Users\HP\source\repos\course\Movie Management\Movie Front\MovieManagement\MovieManagement\obj\Debug\net6.0\ref\MovieManagement.dll
-C:\Users\HP\source\repos\course\Movie Management\Movie Front\MovieManagement\MovieManagement\bin\Debug\net6.0\Newtonsoft.Json.dll

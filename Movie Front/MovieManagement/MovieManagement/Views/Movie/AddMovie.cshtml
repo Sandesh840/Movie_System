@@ -1,0 +1,68 @@
+﻿@model MovieManagement.ViewModels.MovieViewModels
+
+
+<div class="container">
+    <h2>Upload Movie</h2>
+    <form asp-controller="Movie" asp-action="SaveMovie" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="name">Movie Title</label>
+            <input required type="text" class="form-control" id="name" asp-for="Title" placeholder="Enter movie title.">
+        </div>
+        <div class="form-group">
+            <label for="text">Movie Description</label>
+            <input required type="text" asp-for="Description" class="form-control" placeholder="Enter movie description.">
+        </div>
+        <div class="form-group">
+            <label for="text">Movie Link</label>
+            <input required type="text" asp-for="MovieLink" class="form-control" placeholder="Enter movie link.">
+        </div>
+        <div class="form-group">
+            <label for="genre">Movie Genre</label>
+            <select class="form-control" id="genre" name="genre" asp-for="Genre">
+                @foreach (var genre in Enum.GetValues(typeof(MovieManagement.E_Nums.Genre)))
+                {
+                    int genreId = (int)genre;
+                    <option value="@genreId">@genre</option>
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="file">File Upload</label>
+            <div class="input-group">
+                <div class="custom-file">
+                    <input type="file" accept=".jpeg, .jpg, .png"
+                           onchange="previewImage(event)" asp-for="FormFile">
+                    <label class="custom-file-label" for="file">Choose file</label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <img id="imagePreview" src="#" alt="Image Preview" style="display: none; max-width: 200px; max-height: 200px;">
+        </div>
+        <button style="margin-top:15px" type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+
+<script>
+    // after file upload change it will call this method with all the eventa
+    function previewImage(event) {
+        // this will catch the input with reference to the event
+        var input = event.target;
+        //this will get imgage preview img  type so that we can maoe URL to img src
+        var preview = document.getElementById('imagePreview');
+        //if input has file then only it will go through the condition
+        if (input.files && input.files[0]) {
+            //this is used to read the file and get its detail. It just a library class
+            var reader = new FileReader();
+            // when an event is triggered and the reader will
+            reader.onload = function (e) {
+                //passing the event data to the img src with the id="imagePreview"
+                preview.src = e.target.result;
+                //setting the style of img to block so that image will load with proper size
+                preview.style.display = 'block';
+            }
+            //this will read the file and generate the url. Its just a function of the FileReader calssand it will read the fiole as binary string
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
