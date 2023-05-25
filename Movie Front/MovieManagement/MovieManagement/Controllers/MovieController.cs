@@ -75,5 +75,65 @@ namespace MovieManagement.Controllers
                 }
             }
         }
+
+
+        [Authorize]
+        public async Task<IActionResult> ViewMovieById(int id)
+        {
+            if(id != 0)
+            {
+                string apiUrl = "https://localhost:7063/api/Movie";
+                string queryString = $"?id={id}";
+
+                HttpClient httpClient=new HttpClient();
+                var response = await httpClient.GetAsync(apiUrl + queryString);
+                var responseString=response.Content.ReadAsStringAsync();
+                MovieViewModels? movie=new MovieViewModels();
+                if (response.IsSuccessStatusCode)
+                {
+                    movie = JsonConvert.DeserializeObject<MovieViewModels>(responseString.Result);
+                    if(movie.MovieReview != null)
+                    {
+                        foreach(var item in movie.MovieReview)
+                        {
+                            var user=await _userManager.FindByIdAsync(item.UserId);
+                            item.UserName = user.UserName;
+                        }
+                    }
+                }
+                return View(movie);
+                
+            }
+            else
+            {
+                return RedirectToAction("LandingPage", "LandingPage");
+            }
+        }
+
+        public async Task<IActionResult> AddReview(int movieId, string comment)
+        {
+            MovieReviewViewModels movieReviewViewModels=new MovieReviewViewModels();
+            movieReviewViewModels.MovieId = movieId;
+            movieReviewViewModels.Comments = comment;
+            var user= await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                movieReviewViewModels.UserId=user.Id;
+            }
+            HttpClient httpClient=new HttpClient();
+            //following line convert the viewmodel into json, class type into json type
+            var jsonContent = new StringContent(JsonConvert.SerializeObject(movieReviewViewModels), Encoding.UTF8, "application/json");
+            var response = await httpClient.PostAsync("https://localhost:7063/api/Movie/addReview", jsonContent);
+            if (response.IsSuccessStatusCode)
+            {
+                string responseBody=await response.Content.ReadAsStringAsync();
+                return RedirectToAction("ViewMovieById?id=" + movieReviewViewModels.MovieId);
+            }
+            else
+            {
+                string responseBody = await response.Content.ReadAsStringAsync();
+                return RedirectToAction("ViewMovieById?id=" + movieReviewViewModels.MovieId);
+            }
+        }
     }
 }

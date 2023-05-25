@@ -1,0 +1,100 @@
+﻿@model MovieManagement.ViewModels.MovieViewModels
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movie Player Site</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .rating span {
+            font-size: 24px;
+            color: gold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+            .rating span:hover,
+            .rating span:hover ~ span {
+                color: orange;
+            }
+
+        .reviews {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">@Model.Title</h1>
+        <p>@Model.Description</p>
+        <p>Release Year: @Model.CreatedDateTime</p>
+        <input id="movieId" hidden value="@Model.MovieId" />
+        <div class="embed-responsive embed-responsive-16by9">
+            <iframe class="embed-responsive-item" src="@Model.MovieLink" allowfullscreen></iframe>
+        </div>
+
+        <div class="rating">
+            <span>&#9733;</span>
+            <span>&#9733;</span>
+            <span>&#9733;</span>
+            <span>&#9733;</span>
+            <span>&#9733;</span>
+        </div>
+
+        <div class="reviews">
+            <h2>Reviews</h2>
+           <ul class="list-unstyled">
+               @if(Model.MovieReview!=null){
+                    @foreach (var item in Model.MovieReview)
+                    {
+                        <li>
+                            <strong>@item.UserName</strong>
+                            <p>@item.Comments</p>
+                        </li>
+                    }
+                }
+                                            
+            </ul>
+
+            <form id="reviewForm">
+
+                <div class="form-group">
+                    <h2>Add Comment</h2>
+                    <textarea class="form-control" id="reviewContent" placeholder="Write your review..." required></textarea>
+                </div>
+                <h3 class="btn btn-primary" onclick="AddComments()"
+                id="submitReview" name="submitReview">Submit Review</h3>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+        // Function to handle form submission and add a new review
+        function AddComments() {
+            debugger
+            var comment = document.getElementById("reviewContent");
+            var movie = document.getElementById("movieId");
+            var commentValue = comment.value;
+            var movieIdValue = movie.value;
+            if (commentValue && movieIdValue) {
+
+                axios.post('/Movie/AddReview?MovieId=' + movieIdValue + '&comment=' + commentValue, null)
+                    .then(function (response) {
+                        // Handle the response here if needed
+                        console.log(response.data);
+                        // Redirect to the desired page
+                    })
+                    .catch(function (error) {
+                        // Handle any errors here
+                        console.log(error);
+                    });
+            }
+            location.reload();
+        }
+
+    </script>
+
+</body>
+</html>

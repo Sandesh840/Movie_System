@@ -11,5 +11,6 @@ namespace Movie_Back_API.ViewModels
         public string? MovieLink { get; set; }
         public string? MoviePath { get; set; }
         public int Total { get; set; }
+        public List<MovieReviewViewModels>? MovieReview { get; set; }
     }
 }

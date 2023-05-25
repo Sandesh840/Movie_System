@@ -1,4 +1,6 @@
-﻿@model List<MovieManagement.ViewModels.MovieViewModels>
+﻿@using Microsoft.AspNetCore.Identity
+@model List<MovieManagement.ViewModels.MovieViewModels>
+@inject SignInManager<IdentityUser> SignInManager
 @{
     int total = 0;
     if (Model != null)
@@ -30,7 +32,15 @@
                         <h5 class="card-title">@item.Title</h5>
                         <p class="card-text">@item.Description</p>
                         <p class="card-text">Release Year: @item.CreatedDateTime.ToShortDateString()</p>
-                        <a href="#" class="btn btn-primary">View Details</a>
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <a href="/Movie/ViewMovieById?id=@item.MovieId" class="btn btn-primary">View Details</a>
+                        }
+                        else
+                        {
+                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary">View Details</a>
+                        }
+                        
                     </div>
                 </div>
             </div>

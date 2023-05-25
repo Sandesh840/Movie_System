@@ -134,6 +134,92 @@ namespace Movie_Back_API.Controllers
             }
         }
 
-               
+        [HttpGet()]
+        public IActionResult GetMovieById([FromQuery] int id)
+        {
+            try
+            {
+                MovieViewModels movieViewModels=new MovieViewModels();
+                var movie = _applicationDbContext.Movie.Where(x => x.Id == id).Include(x=>x.MovieDetails).Include(x=>x.MovieMedia).Include(x=>x.MovieReview).FirstOrDefault();
+                if (movie != null)
+                {
+                    movieViewModels.MovieId=movie.Id;
+                    movieViewModels.Title = movie.Title;
+                    movieViewModels.CreatedDateTime=movie.CreatedDateTime;
+                    movieViewModels.Description = movie.Description;
+                    movieViewModels.Genre = movie.MovieDetails.Genra;
+                    movieViewModels.MoviePath = movie.MovieMedia?.FirstOrDefault()?.MediaPath;
+                    movieViewModels.MovieLink=movie.MovieDetails.MovieLink;
+                    movieViewModels.MovieReview = new List<MovieReviewViewModels>();
+                    if (movie.MovieReview != null)
+                    {
+                        foreach(var item in movie.MovieReview)
+                        {
+                            MovieReviewViewModels movieReviewViewModels=new MovieReviewViewModels();
+                            movieReviewViewModels.MovieId=item.MovieId;
+                            movieReviewViewModels.UserId=item.UserId;
+                            movieReviewViewModels.Comments=item.Comments;
+                            movieViewModels.MovieReview.Add(movieReviewViewModels);
+
+                        }
+                    }                   
+                    return Ok(movieViewModels);
+                }
+                return NotFound();
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteMovie(int id)
+        {
+            try
+            {
+                var movie = _applicationDbContext.Movie.FirstOrDefault(x => x.Id == id);
+                if (movie != null)
+                {
+                    _applicationDbContext.Movie.Remove(movie);
+                    _applicationDbContext.SaveChanges();
+                    return Ok("Movie deleted successfully.");
+                }
+                return NotFound("Movie not found.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        [HttpPost("addReview")]
+        public IActionResult AddReview(MovieReviewViewModels movieReviewViewModels)
+        {
+            using var dbTran = _applicationDbContext.Database.BeginTransaction();
+            try
+            {
+                MovieReview movieReview=new MovieReview();
+                if (movieReview != null)
+                {
+                    movieReview.MovieId=movieReviewViewModels.MovieId;
+                    movieReview.UserId=movieReviewViewModels.UserId;
+                    movieReview.Comments = movieReviewViewModels.Comments;
+                    _applicationDbContext.MovieReview.AddAsync(movieReview);
+                    _applicationDbContext.SaveChanges();
+                    dbTran.Commit();
+                    return Ok(movieReview);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
     }
 }

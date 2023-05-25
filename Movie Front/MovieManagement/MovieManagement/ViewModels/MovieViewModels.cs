@@ -12,5 +12,6 @@
         public int Total { get; set; }
         public DateTime CreatedDateTime { get; set; }
         public IFormFile? FormFile { get; set; }
+        public List<MovieReviewViewModels>? MovieReview { get; set; }
     }
 }
