@@ -140,7 +140,7 @@ namespace Movie_Back_API.Controllers
             try
             {
                 MovieViewModels movieViewModels=new MovieViewModels();
-                var movie = _applicationDbContext.Movie.Where(x => x.Id == id).Include(x=>x.MovieDetails).Include(x=>x.MovieMedia).Include(x=>x.MovieReview).FirstOrDefault();
+                var movie = _applicationDbContext.Movie.Where(x => x.Id == id).Include(x=>x.MovieDetails).Include(x=>x.MovieMedia).Include(x=>x.MovieReview).Include(x=>x.MovieRating).FirstOrDefault();
                 if (movie != null)
                 {
                     movieViewModels.MovieId=movie.Id;
@@ -162,7 +162,17 @@ namespace Movie_Back_API.Controllers
                             movieViewModels.MovieReview.Add(movieReviewViewModels);
 
                         }
-                    }                   
+                    }
+                    movieViewModels.AvgRating = 0;
+                    if (movie.MovieRating != null && movie.MovieRating.Count>0)
+                    {
+                        int rating = 0;
+                        foreach(var item in movie.MovieRating)
+                        {
+                            rating=rating+Convert.ToInt32(item.Rating);
+                        }
+                        movieViewModels.AvgRating=rating/movie.MovieRating.Count;
+                    }
                     return Ok(movieViewModels);
                 }
                 return NotFound();
@@ -185,7 +195,9 @@ namespace Movie_Back_API.Controllers
                     _applicationDbContext.SaveChanges();
                     return Ok("Movie deleted successfully.");
                 }
-                return NotFound("Movie not found.");
+                
+                    return NotFound("Movie not found.");
+                
             }
             catch (Exception ex)
             {
@@ -221,5 +233,80 @@ namespace Movie_Back_API.Controllers
                 return BadRequest(ex);
             }
         }
+
+        [HttpPost("addRating")]
+        public IActionResult AddRating(MovieRatingViewModels movieRatingViewModels)
+        {
+            using var dbTran = _applicationDbContext.Database.BeginTransaction();
+            try
+            {
+                MovieRating MovieRating = new MovieRating();
+                if (MovieRating != null)
+                {
+                    MovieRating.MovieId = movieRatingViewModels.MovieId;
+                    MovieRating.UserId = movieRatingViewModels.UserId;
+                    MovieRating.Rating = movieRatingViewModels.Rating;
+                    _applicationDbContext.MovieRating.Add(MovieRating);
+                    _applicationDbContext.SaveChanges();
+                    dbTran.Commit();
+                    return Ok(MovieRating);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+        [HttpPost("updatemovie")]
+        public async Task<IActionResult> UpdateMovie([FromBody] MovieViewModels movieViewModels)
+        {
+            using var dbTran = _applicationDbContext.Database.BeginTransaction();
+            try
+            {
+                Movie movie = new Movie();
+                if (movieViewModels != null)
+                {
+                    movie.Title = movieViewModels.Title;
+                    movie.Description = movieViewModels.Description;
+                    movie.UserId = movieViewModels.UserId;
+
+                    _applicationDbContext.Movie.Update(movie);
+                    _applicationDbContext.SaveChanges();
+
+                    MovieDetails movieDetails = new MovieDetails();
+                    movieDetails.MovieId = movie.Id;
+                    movieDetails.Genra = movieViewModels.Genre;
+                    movieDetails.MovieLink = movieViewModels.MovieLink;
+
+                    _applicationDbContext.MovieDetails.Update(movieDetails);
+                    _applicationDbContext.SaveChanges();
+
+                    MovieMedia movieMedia = new MovieMedia();
+                    movieMedia.MovieId = movie.Id;
+                    movieMedia.MediaPath = movieViewModels.MoviePath;
+
+                    _applicationDbContext.MovieMedia.Update(movieMedia);
+                    _applicationDbContext.SaveChanges();
+
+                    dbTran.Commit();
+                    return Ok("Data Saved mSuccessfully");
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                dbTran.Rollback();
+                return BadRequest(ex.Message);
+            }
+
+        }
+
     }
 }

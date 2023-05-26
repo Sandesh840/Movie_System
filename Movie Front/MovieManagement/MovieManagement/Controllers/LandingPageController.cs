@@ -18,7 +18,7 @@ namespace MovieManagement.Controllers
             {
                 offset = 0;
             }
-            if(searchName == null)
+            if (searchName == null)
             {
                 searchName = "";
             }
@@ -28,16 +28,16 @@ namespace MovieManagement.Controllers
             movieRequestViewModels.SearchName = searchName;
 
             string apiUrl = "https://localhost:7063/api/Movie/allMovie";
-            string queryString=$"?limit={movieRequestViewModels.Limit}&offset={movieRequestViewModels.Offset}"+
+            string queryString = $"?limit={movieRequestViewModels.Limit}&offset={movieRequestViewModels.Offset}" +
                 $"&searchName={Uri.EscapeDataString(movieRequestViewModels.SearchName)}";
 
             HttpClient httpClient = new HttpClient();
-            var response = await httpClient.GetAsync(apiUrl+queryString);
-            var responseString =  response.Content.ReadAsStringAsync();
+            var response = await httpClient.GetAsync(apiUrl + queryString);
+            var responseString = response.Content.ReadAsStringAsync();
             List<MovieViewModels>? movies = new List<MovieViewModels>();
             if (response.IsSuccessStatusCode)
             {
-                movies = JsonConvert.DeserializeObject <List<MovieViewModels >> (responseString.Result);
+                movies = JsonConvert.DeserializeObject<List<MovieViewModels>>(responseString.Result);
             }
             return View(movies);
         }

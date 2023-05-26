@@ -1,5 +1,7 @@
 ﻿@model MovieManagement.ViewModels.MovieViewModels
-
+@{
+    int averageRating = Model.AvgRating;
+}
 <!DOCTYPE html>
 <html>
 <head>
@@ -13,10 +15,10 @@
             transition: color 0.3s;
         }
 
-            .rating span:hover,
+           /* .rating span:hover,
             .rating span:hover ~ span {
                 color: orange;
-            }
+            }*/
 
         .reviews {
             margin-top: 20px;
@@ -34,27 +36,15 @@
         </div>
 
         <div class="rating">
-            <span>&#9733;</span>
-            <span>&#9733;</span>
-            <span>&#9733;</span>
-            <span>&#9733;</span>
-            <span>&#9733;</span>
+            <span class="star" data-value="1">&#9733;</span>
+            <span class="star" data-value="2">&#9733;</span>
+            <span class="star" data-value="3">&#9733;</span>
+            <span class="star" data-value="4">&#9733;</span>
+            <span class="star" data-value="5">&#9733;</span>
         </div>
 
         <div class="reviews">
-            <h2>Reviews</h2>
-           <ul class="list-unstyled">
-               @if(Model.MovieReview!=null){
-                    @foreach (var item in Model.MovieReview)
-                    {
-                        <li>
-                            <strong>@item.UserName</strong>
-                            <p>@item.Comments</p>
-                        </li>
-                    }
-                }
-                                            
-            </ul>
+           
 
             <form id="reviewForm">
 
@@ -65,10 +55,67 @@
                 <h3 class="btn btn-primary" onclick="AddComments()"
                 id="submitReview" name="submitReview">Submit Review</h3>
             </form>
+            <h2>Reviews</h2>
+            <ul class="list-unstyled">
+                @if (Model.MovieReview != null)
+                {
+                    @foreach (var item in Model.MovieReview)
+                    {
+                        <li>
+                            <strong>@item.UserName</strong>
+                            <p>@item.Comments</p>
+                        </li>
+                    }
+                }
+
+            </ul>
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            updateStarColors(@averageRating)
+            $('.star').on('click', function () {
+                var ratingValue = $(this).data('value');
+                // Make the API request with the rating value
+                updateStarColors(ratingValue);
+                sendRating(ratingValue);
+            });
+        });
+
+        function updateStarColors(ratingValue) {
+            $('.star').each(function () {
+                var starValue = $(this).data('value');
+                if (starValue <= ratingValue) {
+                    $(this).css('color', 'orange');
+                } else {
+                    $(this).css('color', 'gold');
+                }
+            });
+        }
+        function sendRating(ratingValue) {
+            var movie = document.getElementById("movieId");
+            var movieIdValue = movie.value;
+            if (ratingValue && movieIdValue) {
+
+                axios.post('/Movie/AddRating?Rating=' + ratingValue + '&MovieId=' + movieIdValue, null)
+                    .then(function (response) {
+                        // Handle the response here if needed
+                        console.log(response.data);
+                        window.location.reload();
+                        // Redirect to the desired page
+                    })
+                    .catch(function (error) {
+                        // Handle any errors here
+                        console.log(error);
+                    });
+            }
+        }
+    </script>
+
 
     <script>
         // Function to handle form submission and add a new review
@@ -84,6 +131,7 @@
                     .then(function (response) {
                         // Handle the response here if needed
                         console.log(response.data);
+                        window.location.reload();
                         // Redirect to the desired page
                     })
                     .catch(function (error) {
@@ -91,7 +139,7 @@
                         console.log(error);
                     });
             }
-            location.reload();
+            //window.location.href = "/Movie/ViewMovieById?id="+movieIdValue;
         }
 
     </script>
