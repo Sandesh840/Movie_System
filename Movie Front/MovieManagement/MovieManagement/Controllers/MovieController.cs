@@ -9,7 +9,7 @@ namespace MovieManagement.Controllers
 {
     public class MovieController : Controller
     {
-        public static int MovieIdCheck = 0;
+        // public static int MovieIdCheck = 0;
         private readonly UserManager<IdentityUser> _userManager;
         public MovieController(UserManager<IdentityUser> userManager)
         {
@@ -81,14 +81,20 @@ namespace MovieManagement.Controllers
         [Authorize]
         public async Task<IActionResult> ViewMovieById(int id)
         {
-            if (MovieIdCheck != 0)
+            //if (MovieIdCheck != 0)
+            //{
+            //    id=MovieIdCheck;
+            //}
+            string? userId = null;
+            var user1 = await _userManager.GetUserAsync(User);
+            if (user1 != null)
             {
-                id=MovieIdCheck;
+                userId = user1?.Id;
             }
             if (id != 0)
             {
                 string apiUrl = "https://localhost:7063/api/Movie";
-                string queryString = $"?id={id}";
+                string queryString = $"?id={id}&userId={userId}";
 
                 HttpClient httpClient = new HttpClient();
                 var response = await httpClient.GetAsync(apiUrl + queryString);
@@ -132,7 +138,7 @@ namespace MovieManagement.Controllers
             if (response.IsSuccessStatusCode)
             {
                 string responseBody = await response.Content.ReadAsStringAsync();
-                MovieIdCheck = movieReviewViewModels.MovieId;
+                // MovieIdCheck = movieReviewViewModels.MovieId;
                 return RedirectToAction("ViewMovieById");
             }
             else
@@ -158,13 +164,63 @@ namespace MovieManagement.Controllers
             if (response.IsSuccessStatusCode)
             {
                 string responseBody = await response.Content.ReadAsStringAsync();
-                MovieIdCheck = movieRatingViewModels.MovieId;
+               // MovieIdCheck = movieRatingViewModels.MovieId;
                 return RedirectToAction("ViewMovieById");
             }
             else
             {
                 string responseBody = await response.Content.ReadAsStringAsync();
                 return RedirectToAction("ViewMovieById?id=" + movieRatingViewModels.MovieId);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddUserFavourite(int MovieId, int isFavourite)
+        {
+
+            UserFavouriteViewModel userFavouriteViewModel = new UserFavouriteViewModel();
+            userFavouriteViewModel.MovieId = MovieId;
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                userFavouriteViewModel.UserId = user?.Id;
+            }
+            HttpClient httpClient = new HttpClient();
+            if (isFavourite == 1)
+            {
+                var jsonContent = new StringContent(JsonConvert.SerializeObject(userFavouriteViewModel), Encoding.UTF8, "application/json");
+
+                var response = await httpClient.PostAsync("https://localhost:7063/api/movie/adduserfavourite", jsonContent);
+                if (response.IsSuccessStatusCode)
+                {
+                    // Request was successful
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    //MovieIdCheck = userFavouriteViewModel.MovieId;
+                    return RedirectToAction("ViewMovieById");
+                }
+                else
+                {
+                    string errorMessage = await response.Content.ReadAsStringAsync();
+                    return RedirectToAction("ViewMovieById?id=" + userFavouriteViewModel.MovieId, "Movie");
+                }
+            }
+            else
+            {
+                var jsonContent = new StringContent(JsonConvert.SerializeObject(userFavouriteViewModel), Encoding.UTF8, "application/json");
+
+                var response = await httpClient.PostAsync("https://localhost:7063/api/movie/removeuserfavourite", jsonContent);
+                if (response.IsSuccessStatusCode)
+                {
+                    // Request was successful
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    //MovieIdCheck = userFavouriteViewModel.MovieId;
+                    return RedirectToAction("ViewMovieById");
+                }
+                else
+                {
+                    string errorMessage = await response.Content.ReadAsStringAsync();
+                    return RedirectToAction("ViewMovieById?id=" + userFavouriteViewModel.MovieId, "Movie");
+                }
             }
         }
     }

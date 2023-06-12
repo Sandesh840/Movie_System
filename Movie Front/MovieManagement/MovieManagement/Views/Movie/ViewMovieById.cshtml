@@ -1,6 +1,9 @@
 ﻿@model MovieManagement.ViewModels.MovieViewModels
+﻿@using Microsoft.AspNetCore.Identity;
+@inject SignInManager<IdentityUser> SignInManager;
 @{
     int averageRating = Model.AvgRating;
+    int isFavourite = Model.IsFavourite;
 }
 <!DOCTYPE html>
 <html>
@@ -15,13 +18,22 @@
             transition: color 0.3s;
         }
 
-           /* .rating span:hover,
+            .rating span:hover,
             .rating span:hover ~ span {
-                color: orange;
-            }*/
+            }
 
         .reviews {
             margin-top: 20px;
+        }
+
+        .clicked {
+            background-color: orange !important;
+            color: white;
+        }
+
+        .unclicked {
+            background-color: purple !important;
+            color: white;
         }
     </style>
 </head>
@@ -34,7 +46,13 @@
         <div class="embed-responsive embed-responsive-16by9">
             <iframe class="embed-responsive-item" src="@Model.MovieLink" allowfullscreen></iframe>
         </div>
-
+        @if (SignInManager.IsSignedIn(User))
+        {
+            <div class="text-right">
+                <button type="button" class="btn" id="addToFavorites">
+                </button>
+            </div>
+        }
         <div class="rating">
             <span class="star" data-value="1">&#9733;</span>
             <span class="star" data-value="2">&#9733;</span>
@@ -44,17 +62,6 @@
         </div>
 
         <div class="reviews">
-           
-
-            <form id="reviewForm">
-
-                <div class="form-group">
-                    <h2>Add Comment</h2>
-                    <textarea class="form-control" id="reviewContent" placeholder="Write your review..." required></textarea>
-                </div>
-                <h3 class="btn btn-primary" onclick="AddComments()"
-                id="submitReview" name="submitReview">Submit Review</h3>
-            </form>
             <h2>Reviews</h2>
             <ul class="list-unstyled">
                 @if (Model.MovieReview != null)
@@ -69,6 +76,17 @@
                 }
 
             </ul>
+
+            <form id="reviewForm">
+
+                <div class="form-group">
+                    <textarea class="form-control" id="reviewContent" placeholder="Write your review..." required></textarea>
+                </div>
+                <h3 class="btn btn-primary" onclick="AddComments()"
+                    id="submitReview" name="submitReview">
+                    Submit Review
+                </h3>
+            </form>
         </div>
     </div>
 
@@ -77,7 +95,17 @@
 
     <script>
         $(document).ready(function () {
-            updateStarColors(@averageRating)
+            var isFavourite = @isFavourite;
+
+            var $addToFavorites = $('#addToFavorites');
+            if (isFavourite === 0) {
+                $addToFavorites.addClass('unclicked');
+                $addToFavorites.text('Add to Favorites');
+            } else if (isFavourite === 1) {
+                $addToFavorites.addClass('clicked');
+                $addToFavorites.text('Remove from Favorites');
+            }
+            updateStarColors(@averageRating);
             $('.star').on('click', function () {
                 var ratingValue = $(this).data('value');
                 // Make the API request with the rating value
@@ -114,20 +142,18 @@
                     });
             }
         }
-    </script>
-
-
-    <script>
-        // Function to handle form submission and add a new review
-        function AddComments() {
-            debugger
-            var comment = document.getElementById("reviewContent");
+        $('#addToFavorites').on('click', function () {
+            var isFavourite = @isFavourite;
             var movie = document.getElementById("movieId");
-            var commentValue = comment.value;
             var movieIdValue = movie.value;
-            if (commentValue && movieIdValue) {
+            console.log(isFavourite);
+            if (isFavourite === 0) {
 
-                axios.post('/Movie/AddReview?MovieId=' + movieIdValue + '&comment=' + commentValue, null)
+                $(this).removeClass('unclicked');
+                $(this).addClass('clicked');
+                $(this).text('Added to Favourites');
+                isFavourite = 1;
+                axios.post('/Movie/AddUserFavourite?MovieId=' + movieIdValue + '&isFavourite=' + isFavourite, null)
                     .then(function (response) {
                         // Handle the response here if needed
                         console.log(response.data);
@@ -139,10 +165,46 @@
                         console.log(error);
                     });
             }
-            //window.location.href = "/Movie/ViewMovieById?id="+movieIdValue;
+            else {
+                $(this).removeClass('clicked');
+                $(this).addClass('unclicked');
+                $(this).text('Add to Favourites');
+                isFavourite = 0;
+                axios.post('/Movie/AddUserFavourite?MovieId=' + movieIdValue + '&isFavourite=' + isFavourite, null)
+                    .then(function (response) {
+                        // Handle the response here if needed
+                        console.log(response.data);
+                        window.location.reload();
+                        // Redirect to the desired page
+                    })
+                    .catch(function (error) {
+                        // Handle any errors here
+                        console.log(error);
+                    });
+            }
+        });
+        // Function to handle form submission and add a new review
+        function AddComments() {
+            var comment = document.getElementById("reviewContent");
+            var movie = document.getElementById("movieId");
+            var commentValue = comment.value;
+            var movieIdValue = movie.value;
+            if (commentValue && movieIdValue) {
+
+                axios.post('/Movie/AddReview?MovieId=' + movieIdValue + '&ReviewComment=' + commentValue, null)
+                    .then(function (response) {
+                        // Handle the response here if needed
+                        console.log(response.data);
+                        window.location.reload();
+                        // Redirect to the desired page
+                    })
+                    .catch(function (error) {
+                        // Handle any errors here
+                        console.log(error);
+                    });
+            }
         }
 
     </script>
-
 </body>
 </html>

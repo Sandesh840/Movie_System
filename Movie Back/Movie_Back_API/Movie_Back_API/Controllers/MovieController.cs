@@ -134,6 +134,7 @@ namespace Movie_Back_API.Controllers
             }
         }
 
+        /*
         [HttpGet()]
         public IActionResult GetMovieById([FromQuery] int id)
         {
@@ -181,30 +182,65 @@ namespace Movie_Back_API.Controllers
             {
                 return BadRequest(ex.Message);
             }
-        }
+        }       */
 
-        [HttpDelete("{id}")]
-        public IActionResult DeleteMovie(int id)
+
+        [HttpGet()]
+        public IActionResult GetMovieById([FromQuery] int id, string? userId)
         {
             try
             {
-                var movie = _applicationDbContext.Movie.FirstOrDefault(x => x.Id == id);
+                MovieViewModels movieViewModel = new MovieViewModels();
+                var movie = _applicationDbContext.Movie.Where(x => x.Id == id)
+                           .Include(x => x.MovieDetails)
+                           .Include(x => x.MovieMedia).Include(x => x.MovieReview)
+                           .Include(x => x.MovieRating).FirstOrDefault();
                 if (movie != null)
                 {
-                    _applicationDbContext.Movie.Remove(movie);
-                    _applicationDbContext.SaveChanges();
-                    return Ok("Movie deleted successfully.");
+                    movieViewModel.MovieId = movie.Id;
+                    movieViewModel.Title = movie.Title;
+                    movieViewModel.CreatedDateTime = movie.CreatedDateTime;
+                    movieViewModel.Description = movie.Description;
+                    movieViewModel.Genre = movie.MovieDetails.Genra;
+                    movieViewModel.MovieLink = movie.MovieDetails.MovieLink;
+                    movieViewModel.MoviePath = movie.MovieMedia?.FirstOrDefault()?.MediaPath;
+                    movieViewModel.MovieReview = new List<MovieReviewViewModels>();
+                    if (movie.MovieReview != null)
+                    {
+                        foreach (var item in movie.MovieReview)
+                        {
+                            MovieReviewViewModels movieReviewViewModel = new MovieReviewViewModels();
+                            movieReviewViewModel.MovieId = item.MovieId;
+                            movieReviewViewModel.UserId = item.UserId;
+                            movieReviewViewModel.Comments = item.Comments;
+                            movieViewModel.MovieReview.Add(movieReviewViewModel);
+                        }
+                    }
+                    movieViewModel.IsFavourite = _applicationDbContext.UserFavourite.
+                        Where(x => x.MovieId == id && x.UserId == userId).FirstOrDefault() != null ?
+                         1 : 0;
+                    movieViewModel.AvgRating = 0;
+                    if (movie.MovieRating != null && movie.MovieRating.Count > 0)
+                    {
+                        int rating = 0;
+                        foreach (var item in movie.MovieRating)
+                        {
+                            rating = rating + Convert.ToInt32(item.Rating);
+                        }
+                        movieViewModel.AvgRating = rating / movie.MovieRating.Count;
+                    }
+                    return Ok(movieViewModel);
+
                 }
-                
-                    return NotFound("Movie not found.");
-                
+                return NotFound();
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
-        }
 
+
+        }
 
         [HttpPost("addReview")]
         public IActionResult AddReview(MovieReviewViewModels movieReviewViewModels)
@@ -261,39 +297,26 @@ namespace Movie_Back_API.Controllers
                 return BadRequest(ex);
             }
         }
-        [HttpPost("updatemovie")]
-        public async Task<IActionResult> UpdateMovie([FromBody] MovieViewModels movieViewModels)
+
+
+        [HttpPost("adduserfavourite")]
+        public IActionResult AddUserFavourite(UserFavouriteViewModel userFavouriteViewModel)
         {
             using var dbTran = _applicationDbContext.Database.BeginTransaction();
             try
             {
-                Movie movie = new Movie();
-                if (movieViewModels != null)
+                //create a object of movie to map on movieViewModel
+                UserFavourite userFavourite = new UserFavourite();
+                if (userFavouriteViewModel.UserId != null && userFavouriteViewModel.MovieId != 0)
                 {
-                    movie.Title = movieViewModels.Title;
-                    movie.Description = movieViewModels.Description;
-                    movie.UserId = movieViewModels.UserId;
-
-                    _applicationDbContext.Movie.Update(movie);
+                    userFavourite.MovieId = userFavouriteViewModel.MovieId;
+                    userFavourite.UserId = userFavouriteViewModel.UserId;
+                    userFavourite.CreatedDateTime = DateTime.Now;
+                    _applicationDbContext.UserFavourite.Add(userFavourite);
                     _applicationDbContext.SaveChanges();
-
-                    MovieDetails movieDetails = new MovieDetails();
-                    movieDetails.MovieId = movie.Id;
-                    movieDetails.Genra = movieViewModels.Genre;
-                    movieDetails.MovieLink = movieViewModels.MovieLink;
-
-                    _applicationDbContext.MovieDetails.Update(movieDetails);
-                    _applicationDbContext.SaveChanges();
-
-                    MovieMedia movieMedia = new MovieMedia();
-                    movieMedia.MovieId = movie.Id;
-                    movieMedia.MediaPath = movieViewModels.MoviePath;
-
-                    _applicationDbContext.MovieMedia.Update(movieMedia);
-                    _applicationDbContext.SaveChanges();
-
                     dbTran.Commit();
-                    return Ok("Data Saved mSuccessfully");
+                    return Ok(userFavourite);
+
                 }
                 else
                 {
@@ -305,8 +328,118 @@ namespace Movie_Back_API.Controllers
                 dbTran.Rollback();
                 return BadRequest(ex.Message);
             }
-
         }
 
+        [HttpPost("removeuserfavourite")]
+        public IActionResult RemoveUserFavourite(UserFavouriteViewModel userFavouriteViewModel)
+        {
+            using var dbTran = _applicationDbContext.Database.BeginTransaction();
+            try
+            {
+                //create a object of movie to map on movieViewModel
+                UserFavourite? userFavourite = _applicationDbContext.UserFavourite.Where(x => x.UserId == userFavouriteViewModel.UserId
+                 && x.MovieId == userFavouriteViewModel.MovieId).FirstOrDefault();
+                if (userFavourite != null)
+                {
+
+                    _applicationDbContext.UserFavourite.Remove(userFavourite);
+                    _applicationDbContext.SaveChanges();
+                    dbTran.Commit();
+                    return Ok(userFavourite);
+
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                dbTran.Rollback();
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("getuserfavourite")]
+        public IActionResult GetUserFavourite([FromQuery] MovieRequestViewModels movieRequest)
+        {
+            try
+            {
+                var allMovies = new List<Movie>();
+                List<MovieViewModels> movieViewModels = new List<MovieViewModels>();
+                List<int> favouriteMovieIdList = _applicationDbContext.UserFavourite.Where(x => x.UserId == movieRequest.UserId).
+                    Select(x => x.MovieId).ToList();
+                if (favouriteMovieIdList != null)
+                {
+                    if (movieRequest != null)
+                    {
+                        if (movieRequest.SearchName != null
+                            && movieRequest.SearchName != "")
+                        {
+                            //search movie by name
+                            //offset is used to skip the data while Limit value
+                            //is used to get specific count of data
+                            if (movieRequest.Limit > 0 && movieRequest.Offset >= 0)
+                            {
+                                allMovies = _applicationDbContext.Movie.Where(x => x.Title.Contains(movieRequest.SearchName) &&
+                                 favouriteMovieIdList.Any(y => x.Id == y))
+                                .Include(x => x.MovieDetails)
+                                .Include(x => x.MovieMedia).Skip(movieRequest.Offset)
+                                .Take(movieRequest.Limit).ToList();
+                            }
+                            else
+                            {
+                                allMovies = _applicationDbContext.Movie.Where(x => x.Title.Contains(movieRequest.SearchName) &&
+                                favouriteMovieIdList.Any(y => x.Id == y))
+                                .Include(x => x.MovieDetails)
+                                .Include(x => x.MovieMedia).ToList();
+                            }
+                        }
+                        else
+                        {
+                            //without search
+                            if (movieRequest.Limit > 0 && movieRequest.Offset >= 0)
+                            {
+                                allMovies = _applicationDbContext.Movie.Where(x => favouriteMovieIdList.Any(y => x.Id == y))
+                                .Include(x => x.MovieDetails)
+                                .Include(x => x.MovieMedia).Skip(movieRequest.Offset)
+                                .Take(movieRequest.Limit).ToList();
+                            }
+                            else
+                            {
+                                allMovies = _applicationDbContext.Movie.Where(x => favouriteMovieIdList.Any(y => x.Id == y))
+                                .Include(x => x.MovieDetails)
+                                .Include(x => x.MovieMedia).ToList();
+                            }
+                        }
+                        if (allMovies != null)
+                        {
+                            foreach (var item in allMovies)
+                            {
+                                MovieViewModels movieViewModel = new MovieViewModels();
+                                movieViewModel.MovieId = item.Id;
+                                movieViewModel.Title = item.Title;
+                                movieViewModel.CreatedDateTime = item.CreatedDateTime;
+                                movieViewModel.Description = item.Description;
+                                movieViewModel.Genre = item.MovieDetails.Genra;
+                                movieViewModel.MovieLink = item.MovieDetails.MovieLink;
+                                movieViewModel.MoviePath = item.MovieMedia?.FirstOrDefault()?.MediaPath;
+                                movieViewModels.Add(movieViewModel);
+                            }
+                            if (movieViewModels != null)
+                            {
+                                movieViewModels[0].Total = _applicationDbContext.Movie.Where(x => favouriteMovieIdList.Any(y => x.Id == y)).Count();
+                            }
+                            return Ok(movieViewModels);
+                        }
+                    }
+                }
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
